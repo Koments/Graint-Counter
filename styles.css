@@ -41,3 +41,10 @@ body div {
     height: 100px;
     margin: 1px;
 }
+
+.grain-containers {
+    background-color: #ffe599;
+    width: 100px;
+    height: 100px;
+    margin: 1px;
+}
