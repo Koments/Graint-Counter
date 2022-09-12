@@ -1,8 +1,12 @@
+const btn = document.querySelector('#btn');
+const load = document.querySelector('#post-array');
+const resultContainer = document.querySelector('#result');
+const storage = document.querySelector('#storage');
+
 function findLeftBorderIndex(levels) {
     for (i = 0; i < levels.length; i++) {
-        if (levels[i] > 0) {
+        if (levels[i] > 0)
             return i
-        }
     }
 
     return -1;
@@ -10,9 +14,11 @@ function findLeftBorderIndex(levels) {
 
 function findRightBorderIndex(levels, leftBorderIndex) {
     let alternativeRightBorderIndex = -1;
+
     for (i = 0; i < levels.length; i++) {
         if (i > leftBorderIndex && levels[i] >= levels[leftBorderIndex])
             return i
+
         if (i > leftBorderIndex && levels[i] > 0 && alternativeRightBorderIndex === -1) {
             alternativeRightBorderIndex = i
         } else if (alternativeRightBorderIndex !== -1 && levels[i] > levels[alternativeRightBorderIndex] && levels[i] > 0) {
@@ -34,7 +40,7 @@ function loadGrain(levels, grainMap = new Map(), globalIndex = 0) {
     if (rightBorderIndex === -1)
         return grainMap;
 
-    //Contact test borders.
+    //Checking the contiguity of the parties.
     if (rightBorderIndex - leftBorderIndex === 1)
         return loadGrain(levels.slice(rightBorderIndex), grainMap, globalIndex + rightBorderIndex);
 
@@ -47,56 +53,62 @@ function loadGrain(levels, grainMap = new Map(), globalIndex = 0) {
         grainMap.set(globalIndex + i, grainCount);
     }
 
-    //рекурсия с новым массивом, обрезаный по проверенную часть
+    //Checking the contiguity of the parties
     return loadGrain(levels.slice(rightBorderIndex), grainMap, globalIndex + rightBorderIndex);
 }
 
-const btn = document.querySelector('#btn');
-const load = document.querySelector('#post-array');
-const resultContainer = document.querySelector('#result');
-const storage = document.querySelector('#storage');
-
 btn.addEventListener('click', e => {
+    //Creating an array from given parameters
     const arr = load.value.split(' ');
 
+    //Removing empty lines
     const strs = arr.filter(function (el) {
         return el !== '';
     });
 
-    const arrNums = strs.map(function (str) {
+    //Convert string to numbers
+    const grainParam = strs.map(function (str) {
         return parseInt(str);
     });
 
-    const resultMap = loadGrain(arrNums);
+    //Check of free space and positions for placing grain
+    const resultMap = loadGrain(grainParam);
     let grainTotal = 0;
 
+    //Summation of the result
     resultMap.forEach(value => {
         grainTotal += value;
     });
 
+    //Displaying the result on the screen
     resultContainer.innerHTML = ` ${grainTotal}`
-
-    loadContainer(arrNums, resultMap);
+    
+    //Warehouse design visualization
+    loadStorage(grainParam, resultMap);
 })
 
-function loadContainer(arr, grainMap) {
+function loadStorage(arr, grainMap) {
     storage.innerHTML = '';
 
+    //Building Blocks    
     for (let i = 0; i < arr.length; i++) {
         const parrentDiv = document.createElement('div');
         parrentDiv.className = `storage-parrent-div-${i} storage-containers`;
         storage.appendChild(parrentDiv);
 
+        //Creating empty cells
         if (grainMap.get(i))
             drawDrains(grainMap.get(i), i);
 
+        //Creating specified cells
         for (let a = 0; a < arr[i]; a++) {
             const storageParrent = document.querySelector(`.storage-parrent-div-${i}`);
             const childDiv = document.createElement('div');
             childDiv.className = `setted-containers`;
             storageParrent.appendChild(childDiv);
         };
-
+        
+        //Num of creating specified cells
         const countContainers = document.createElement('div');
         parrentDiv.appendChild(countContainers);
         countContainers.textContent = `${arr[i]}`
@@ -104,6 +116,7 @@ function loadContainer(arr, grainMap) {
 }
 
 function drawDrains(grainsCount, i) {
+    //Loop to add to correct slot
     for (let b = 0; b < grainsCount; b++) {
         const parrentDiv = document.querySelector(`.storage-parrent-div-${i}`);
         const childDiv = document.createElement('div');
@@ -111,7 +124,8 @@ function drawDrains(grainsCount, i) {
         parrentDiv.appendChild(childDiv);
     }
 }
-// 2 1 5 2 7 4 10
+
+// Test
 // console.log(loadGrain([4, 5, 3, 1, 3])) // 2
 // console.log(loadGrain([2, 1, 5, 2, 7, 4, 10])) // 7
 // console.log(loadGrain([2, 0, 1, 5, 2, 7])) // 6
